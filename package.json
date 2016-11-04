@@ -11,9 +11,16 @@
   "license": "Apache-2.0",
   "dependencies": {
     "boom": "^3.2.1",
+    "glob": "^7.1.1",
+    "handlebars": "^4.0.5",
     "hapi": "^13.4.1",
+    "hapi-auth-jwt": "^4.0.0",
+    "hapi-pagination": "^1.8.1",
     "joi": "^8.4.2",
+    "jwt-decode": "^2.1.0",
     "mongojs": "^2.4.0",
-    "node-uuid": "^1.4.7"
+    "mongoose": "^4.6.4",
+    "node-uuid": "^1.4.7",
+    "vision": "^4.1.0"
   }
 }

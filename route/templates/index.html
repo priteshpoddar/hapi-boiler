@@ -1,0 +1,211 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="http://localhost:4001/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.5.1/socket.io.js"></script>
+</head>
+<body>
+    <script>
+    var socket = io.connect('http://localhost:3000', {
+    	query: 'token=' + 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjU4MTFkNjAwZDFlOTdkMDk3MGViNmIwNyIsInVzZXJuYW1lIjoidGVzdDQ1Iiwic2NvcGUiOiJhZG1pbiIsImlhdCI6MTQ3NzU2MzkwNCwiZXhwIjoxNDc3NTY3NTA0fQ.NoViIrcd6AsZJXMtOmY2lfytoVaDp883qUxdndKoZCM',
+    	forceNew: true
+    });
+
+    console.log('Connected Socket');
+
+    socket.emit('hello', function (action) {
+        console.log(action, 'hello');
+    });
+
+    socket.on('hello', function (action) {
+        console.log(action);
+    });
+    </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font: 13px Helvetica, Arial; }
+          #formMessage { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+          #formMessage input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+          #formMessage button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+          #messages { list-style-type: none; margin: 0; padding: 0; }
+          #messages li { padding: 5px 10px; }
+          #messages li:nth-child(odd) { background: #eee; }
+        </style>
+</head>
+<body>
+    <h1>Get Token from HTTP server</h1>
+    <form id="userForm">
+        <label>Username</label>
+        <input id="username" name="username"/>
+        <br>
+        <br>
+        <label>Password</label>
+        <input id="password" name="password"/>
+        <input type="submit"/>
+    </form>
+    <br>
+    <br>
+    <br>
+    <label>Valid Token:</label>
+    <input id="validToken" readonly/>
+    <button id="validConnect">Connect</button>
+    <br>
+    <br>
+    <br>
+    <button id="sayHello">Say Hello</button>
+    <br>
+    <br>
+    <br>
+
+    <!-- <form id="formMessage">
+        <label>Message</label>
+        <input id="inputMessage" name="inputMessage"/>
+        <input type="submit"/>
+    </form> -->
+
+    <ul id="messages"></ul>
+        <form id="formMessage" action="">
+            <input id="inputMessage" autocomplete="off" /><button>Send</button>
+        </form>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+    <script type="text/javascript">
+
+    $(document).ready(function () {
+      var socket;
+      var validToken;
+
+        socket = io.connect('http://localhost:3000', {
+            query: 'token=' + validToken,
+            forceNew: true
+        });
+
+        socket.on('connect', function (io) {
+            console.log('you are now connected to the websocket server');
+
+
+            socket.on('chat message', function(msg){
+                console.log(msg, 'chat message');
+                $('#messages').append($('<li>').text(msg));
+            });
+
+        });
+
+
+        socket.on('error', function (err) {
+            console.log(JSON.stringify(err));
+        });
+
+
+      $('#userForm').submit(function (e) {
+        e.preventDefault();
+        var username = $('input[name=username]').val();
+        var password = $('input[name=password]').val();
+
+        if (!username) {
+          alert('fill in a username first');
+          return;
+        }
+
+        if (!password) {
+          alert('fill in a password first');
+          return;
+        }
+
+        var user = {
+          username: $('input[name=username]').val()
+        };
+
+        $.ajax({
+          type: 'POST',
+          url: 'http://localhost:3000/api/users/authenticate',
+          data: {
+            username: $('input[name=username]').val(),
+            password: $('input[name=password]').val()
+          }
+        }).done(function (data) {
+          $('#tokenGenerated').val(data.id_token);
+          $('#validToken').val(data.id_token);
+        });
+
+      });
+
+      $('#invalidConnect').click(function () {
+        var invalidToken = $('#invalidToken').val();
+
+        socket = io.connect('http://localhost:3000', {
+          query: 'token=' + invalidToken,
+          forceNew: true
+        });
+
+        socket.on('error', function (err) {
+          alert(JSON.stringify(err));
+        });
+      });
+
+      $('#validConnect').click(function () {
+        validToken = $('#validToken').val();
+
+        // if (!validToken) {
+        //   alert('please run the first example.');
+        //   return;
+        // }
+
+        socket = io.connect('http://localhost:3000', {
+          query: 'token=' + validToken,
+          forceNew: true
+        });
+
+        socket.on('connect', function (data) {
+            console.log('you are now connected to the websocket server');
+
+            socket.on('chat message', function(msg){
+                console.log(msg, 'chat message');
+                $('#messages').append($('<li>').text(msg));
+            });
+        });
+
+        socket.on('error', function (err) {
+          alert(JSON.stringify(err));
+        });
+      });
+
+       $('#formMessage').submit(function(e){
+
+            console.log(socket);
+
+            e.preventDefault();
+            socket.emit('chat message', $('#inputMessage').val());
+
+            $('#inputMessage').val('');
+
+            // return false;
+        });
+
+        $('#sayHello').click(function(e){
+
+            console.log(socket);
+
+            e.preventDefault();
+            socket.emit('hello', 'sas');
+
+
+            // return false;
+        });
+
+    });
+
+  </script>
+</body>
+</html>
